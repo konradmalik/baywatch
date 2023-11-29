@@ -1,0 +1,16 @@
+[package]
+name = "baywatch"
+version = "0.0.1"
+edition = "2021"
+
+[[bin]]
+name = "bwatch"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0.75"
+clap = { version = "4.4.10", features = ["derive"] }
+env_logger = "0.10.1"
+ignore = "0.4.21"
+log = "0.4.20"
+notify = "6.1.1"

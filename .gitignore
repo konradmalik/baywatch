@@ -1,0 +1,9 @@
+# rust
+/debug
+/target
+
+**/*.rs.bk
+
+# nix
+.direnv
+result
