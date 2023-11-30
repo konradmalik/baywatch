@@ -1,38 +1,40 @@
+use anyhow::Result;
 use clap::Parser;
 use ignore::Walk;
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
 struct Cli {
     /// The path to watch
-    path: Option<std::path::PathBuf>,
+    #[arg(default_value = PathBuf::from(".").into_os_string())]
+    path: std::path::PathBuf,
 }
 
 fn main() {
     let args = Cli::parse();
-    let path = args.path.unwrap_or(Path::new(".").to_path_buf());
+    let path = args.path;
 
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
-    log::info!("not ignored contents of {}:", path.display());
-    for result in Walk::new(&path) {
-        // Each item yielded by the iterator is either a directory entry or an
-        // error, so either print the path or the error.
-        match result {
-            Ok(entry) => println!("{}", entry.path().display()),
-            Err(err) => println!("ERROR: {}", err),
-        }
-    }
-
     log::info!("Watching {}", &path.display());
 
-    if let Err(error) = watch(path) {
+    let paths = get_not_ignored_files(path);
+
+    if let Err(error) = watch(&paths) {
         log::error!("Error: {error:?}");
     }
 }
 
-fn watch<P: AsRef<Path>>(path: P) -> notify::Result<()> {
+fn get_not_ignored_files<P: AsRef<Path>>(path: P) -> Vec<PathBuf> {
+    Walk::new(&path)
+        .flatten()
+        .filter(|d| d.file_type().map(|ft| ft.is_file()).unwrap_or(false))
+        .map(|d| d.into_path())
+        .collect()
+}
+
+fn watch<P: AsRef<Path>>(paths: &[P]) -> Result<()> {
     let (tx, rx) = std::sync::mpsc::channel();
 
     // Automatically select the best implementation for your platform.
@@ -41,11 +43,15 @@ fn watch<P: AsRef<Path>>(path: P) -> notify::Result<()> {
 
     // Add a path to be watched. All files and directories at that path and
     // below will be monitored for changes.
-    watcher.watch(path.as_ref(), RecursiveMode::Recursive)?;
+    for path in paths {
+        watcher.watch(path.as_ref(), RecursiveMode::Recursive)?;
+    }
 
     for res in rx {
         match res {
-            Ok(event) => log::info!("Change: {event:?}"),
+            Ok(event) => {
+                log::info!("Change: {:?}", event.paths)
+            }
             Err(error) => log::error!("Error: {error:?}"),
         }
     }

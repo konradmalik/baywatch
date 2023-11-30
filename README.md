@@ -7,4 +7,3 @@ Watch files and execute commands if they change.
 -   simple
 -   sane defaults
     -   like using local gitignore properly
-
