@@ -1,5 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
+use watching::PathWatcher;
 mod cli;
 mod filters;
 mod logging;
@@ -15,6 +16,6 @@ fn main() -> Result<()> {
 
     let paths = filters::get_not_ignored_files(path);
 
-    let watcher = watching::PathWatcher::new(paths);
+    let watcher = watching::NotifyWatcher::new(paths);
     watcher.watch()
 }

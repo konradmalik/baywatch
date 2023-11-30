@@ -2,16 +2,16 @@ use anyhow::Result;
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use std::path::PathBuf;
 
-pub struct PathWatcher {
+pub trait PathWatcher {
+    fn watch(&self) -> Result<()>;
+}
+
+pub struct NotifyWatcher {
     paths: Vec<PathBuf>,
 }
 
-impl PathWatcher {
-    pub fn new(paths: Vec<PathBuf>) -> Self {
-        PathWatcher { paths }
-    }
-
-    pub fn watch(&self) -> Result<()> {
+impl PathWatcher for NotifyWatcher {
+    fn watch(&self) -> Result<()> {
         let (tx, rx) = std::sync::mpsc::channel();
 
         let mut watcher = RecommendedWatcher::new(tx, Config::default())?;
@@ -31,5 +31,11 @@ impl PathWatcher {
         }
 
         Ok(())
+    }
+}
+
+impl NotifyWatcher {
+    pub fn new(paths: Vec<PathBuf>) -> Self {
+        NotifyWatcher { paths }
     }
 }
