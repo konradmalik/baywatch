@@ -38,7 +38,7 @@ impl PathWatcher for NotifyWatcher {
                     log::debug!("Change in: {:?}", event.paths);
                     for path in event.paths {
                         let change = ChangeEvent { path };
-                        if let Err(_) = changes.try_send(change) {
+                        if changes.try_send(change).is_err() {
                             log::debug!("buffer full, ignoring event");
                         };
                     }
