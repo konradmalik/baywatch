@@ -12,18 +12,21 @@ mod watching;
 
 fn main() -> Result<()> {
     let args = cli::Args::parse();
-    let path = args.path;
+    let paths = args.path;
 
     logging::init("info");
 
     let (tx, rx) = mpsc::sync_channel(1);
 
     thread::spawn(|| {
-        log::debug!("Watching {}", &path.display());
+        let mut paths_to_watch = Vec::new();
+        for path in paths {
+            log::debug!("Watching {}", &path.display());
+            let filter = filters::IgnorePathFilter::new(path);
+            paths_to_watch.extend_from_slice(&filter.paths());
+        }
 
-        let filter = filters::IgnorePathFilter::new(path);
-        let watcher = watching::NotifyWatcher::new(filter.paths());
-
+        let watcher = watching::NotifyWatcher::new(paths_to_watch);
         watcher.watch(tx).expect("cannot start watcher")
     });
 
