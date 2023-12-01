@@ -1,4 +1,7 @@
-use std::process::{Command, Stdio};
+use std::{
+    env,
+    process::{Command, Stdio},
+};
 
 use crate::watching::ChangeEvent;
 
@@ -15,13 +18,18 @@ impl CommandEventHandler {
     pub fn new(command: Vec<String>, status: bool) -> Self {
         CommandEventHandler { command, status }
     }
+
+    pub fn new_shell(command: Vec<String>, status: bool) -> Self {
+        let shell = env::var("SHELL").unwrap_or("sh".to_owned());
+        let cmd = vec![shell, "-c".to_owned(), command.join(" ")];
+        Self::new(cmd, status)
+    }
 }
 
 impl EventHandler for CommandEventHandler {
     fn handle(&self, event: ChangeEvent) {
         log::debug!("{event}, command: {:?}", self.command);
 
-        // FIXME this does not respect shell aliases, should it?
         let mut cmd = Command::new(
             self.command
                 .first()

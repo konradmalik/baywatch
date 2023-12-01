@@ -15,6 +15,7 @@ fn main() -> Result<()> {
     let paths = args.path;
     let command = args.command;
     let status = args.status;
+    let shell = args.status;
 
     logging::init("info");
 
@@ -32,7 +33,12 @@ fn main() -> Result<()> {
         watcher.watch(tx).expect("cannot start watcher")
     });
 
-    let handler = handling::CommandEventHandler::new(command, status);
+    let handler = if shell {
+        handling::CommandEventHandler::new_shell(command, status)
+    } else {
+        handling::CommandEventHandler::new(command, status)
+    };
+
     for ev in rx {
         handler.handle(ev);
     }

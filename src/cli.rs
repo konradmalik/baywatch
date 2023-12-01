@@ -9,6 +9,9 @@ pub struct Args {
     /// Command to execute
     #[arg(required=true, num_args=1..)]
     pub command: Vec<String>,
+    /// Whether to execute the command in shell (read from SHELL env var, fallback to 'sh')
+    #[arg(short, long)]
+    pub shell: bool,
     /// Whether to show exit status
     #[arg(short, long)]
     pub status: bool,
