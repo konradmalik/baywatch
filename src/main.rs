@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 use filters::PathFilter;
-use handling::handle_event;
+use handling::EventHandler;
 use std::{sync::mpsc, thread};
 use watching::PathWatcher;
 mod cli;
@@ -13,6 +13,7 @@ mod watching;
 fn main() -> Result<()> {
     let args = cli::Args::parse();
     let paths = args.path;
+    let command = args.command;
 
     logging::init("info");
 
@@ -30,8 +31,9 @@ fn main() -> Result<()> {
         watcher.watch(tx).expect("cannot start watcher")
     });
 
+    let handler = handling::CommandEventHandler::new(command);
     for ev in rx {
-        handle_event(ev);
+        handler.handle(ev);
     }
 
     Ok(())
