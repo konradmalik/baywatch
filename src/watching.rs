@@ -1,9 +1,21 @@
 use anyhow::Result;
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
+use std::fmt::Display;
 use std::path::PathBuf;
+use std::sync::mpsc;
+
+pub struct ChangeEvent {
+    path: PathBuf,
+}
+
+impl Display for ChangeEvent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.path.display().fmt(f)
+    }
+}
 
 pub trait PathWatcher {
-    fn watch(&self) -> Result<()>;
+    fn watch(&self, changes: mpsc::SyncSender<ChangeEvent>) -> Result<()>;
 }
 
 pub struct NotifyWatcher {
@@ -11,8 +23,8 @@ pub struct NotifyWatcher {
 }
 
 impl PathWatcher for NotifyWatcher {
-    fn watch(&self) -> Result<()> {
-        let (tx, rx) = std::sync::mpsc::channel();
+    fn watch(&self, changes: mpsc::SyncSender<ChangeEvent>) -> Result<()> {
+        let (tx, rx) = mpsc::channel();
 
         let mut watcher = RecommendedWatcher::new(tx, Config::default())?;
 
@@ -24,7 +36,12 @@ impl PathWatcher for NotifyWatcher {
             match res {
                 Ok(event) => {
                     log::debug!("Change in: {:?}", event.paths);
-                    println!("Change in: {:?}", event.paths)
+                    for path in event.paths {
+                        let change = ChangeEvent { path };
+                        if let Err(_) = changes.try_send(change) {
+                            log::debug!("buffer full, ignoring event");
+                        };
+                    }
                 }
                 Err(error) => log::error!("Error: {error:?}"),
             }
