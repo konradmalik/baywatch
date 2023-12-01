@@ -8,6 +8,14 @@ pub struct ChangeEvent {
     path: PathBuf,
 }
 
+impl ChangeEvent {
+    pub fn new() -> Self {
+        ChangeEvent {
+            path: PathBuf::new(),
+        }
+    }
+}
+
 impl Display for ChangeEvent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.path.display().fmt(f)

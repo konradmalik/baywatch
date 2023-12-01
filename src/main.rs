@@ -40,7 +40,7 @@ fn main() -> Result<()> {
     };
 
     for ev in rx {
-        handler.handle(ev);
+        handler.handle(ev).expect("command handler error");
     }
 
     Ok(())

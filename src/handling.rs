@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Result};
 use std::{
     env,
     process::{Command, Stdio},
@@ -6,7 +7,7 @@ use std::{
 use crate::watching::ChangeEvent;
 
 pub trait EventHandler {
-    fn handle(&self, event: ChangeEvent);
+    fn handle(&self, event: ChangeEvent) -> Result<()>;
 }
 
 pub struct CommandEventHandler {
@@ -27,25 +28,55 @@ impl CommandEventHandler {
 }
 
 impl EventHandler for CommandEventHandler {
-    fn handle(&self, event: ChangeEvent) {
+    fn handle(&self, event: ChangeEvent) -> Result<()> {
         log::debug!("{event}, command: {:?}", self.command);
 
-        let mut cmd = Command::new(
-            self.command
-                .first()
-                .expect("command did not contain any elements"),
-        )
-        .args(&self.command[1..])
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit())
-        .spawn()
-        .unwrap();
+        let main_command = self
+            .command
+            .first()
+            .ok_or_else(|| anyhow!("empty command"))?;
+        let mut cmd = Command::new(main_command)
+            .args(&self.command[1..])
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .spawn()
+            .unwrap();
 
-        let status = cmd.wait().unwrap();
+        let status = cmd.wait()?;
         if self.status {
             if let Some(code) = status.code() {
                 println!("Exited with: {code}")
             }
-        }
+        };
+
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_non_shell_handler_executes_correctly() {
+        let handler = CommandEventHandler::new(vec!["ls".to_owned()], false);
+        let event = ChangeEvent::new();
+        handler.handle(event).expect("handle must succeed");
+    }
+
+    #[test]
+    fn test_shell_handler_executes_correctly() {
+        let handler = CommandEventHandler::new(vec!["echo".to_owned(), "hi".to_owned()], false);
+        let event = ChangeEvent::new();
+        handler.handle(event).expect("handle must succeed");
+    }
+
+    #[test]
+    fn test_handler_fails_without_any_command() {
+        let handler = CommandEventHandler::new(Vec::new(), false);
+        let event = ChangeEvent::new();
+        handler
+            .handle(event)
+            .expect_err("handle return error when command is empty");
     }
 }
