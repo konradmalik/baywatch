@@ -19,7 +19,7 @@ fn main() -> Result<()> {
 
     logging::init("info");
 
-    let (tx, rx) = mpsc::sync_channel(1);
+    let (tx, rx) = mpsc::sync_channel(0);
 
     thread::spawn(|| {
         let mut paths_to_watch = Vec::new();
