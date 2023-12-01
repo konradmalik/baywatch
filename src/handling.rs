@@ -8,11 +8,12 @@ pub trait EventHandler {
 
 pub struct CommandEventHandler {
     command: Vec<String>,
+    status: bool,
 }
 
 impl CommandEventHandler {
-    pub fn new(command: Vec<String>) -> Self {
-        CommandEventHandler { command }
+    pub fn new(command: Vec<String>, status: bool) -> Self {
+        CommandEventHandler { command, status }
     }
 }
 
@@ -33,6 +34,10 @@ impl EventHandler for CommandEventHandler {
         .unwrap();
 
         let status = cmd.wait().unwrap();
-        println!("{status}")
+        if self.status {
+            if let Some(code) = status.code() {
+                println!("Exited with: {code}")
+            }
+        }
     }
 }

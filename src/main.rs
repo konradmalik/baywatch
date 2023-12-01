@@ -14,6 +14,7 @@ fn main() -> Result<()> {
     let args = cli::Args::parse();
     let paths = args.path;
     let command = args.command;
+    let status = args.status;
 
     logging::init("info");
 
@@ -31,7 +32,7 @@ fn main() -> Result<()> {
         watcher.watch(tx).expect("cannot start watcher")
     });
 
-    let handler = handling::CommandEventHandler::new(command);
+    let handler = handling::CommandEventHandler::new(command, status);
     for ev in rx {
         handler.handle(ev);
     }
