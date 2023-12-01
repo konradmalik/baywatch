@@ -29,7 +29,7 @@ impl CommandEventHandler {
 
 impl EventHandler for CommandEventHandler {
     fn handle(&self, event: ChangeEvent) -> Result<()> {
-        log::debug!("{event}, command: {:?}", self.command);
+        log::debug!("{:?}, command: {:?}", event, self.command);
 
         let main_command = self
             .command
@@ -60,21 +60,21 @@ mod tests {
     #[test]
     fn test_non_shell_handler_executes_correctly() {
         let handler = CommandEventHandler::new(vec!["ls".to_owned()], false);
-        let event = ChangeEvent::new();
+        let event = ChangeEvent;
         handler.handle(event).expect("handle must succeed");
     }
 
     #[test]
     fn test_shell_handler_executes_correctly() {
         let handler = CommandEventHandler::new(vec!["echo".to_owned(), "hi".to_owned()], false);
-        let event = ChangeEvent::new();
+        let event = ChangeEvent;
         handler.handle(event).expect("handle must succeed");
     }
 
     #[test]
     fn test_handler_fails_without_any_command() {
         let handler = CommandEventHandler::new(Vec::new(), false);
-        let event = ChangeEvent::new();
+        let event = ChangeEvent;
         handler
             .handle(event)
             .expect_err("handle return error when command is empty");

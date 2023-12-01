@@ -1,26 +1,10 @@
 use anyhow::Result;
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
-use std::fmt::Display;
 use std::path::PathBuf;
 use std::sync::mpsc;
 
-pub struct ChangeEvent {
-    path: PathBuf,
-}
-
-impl ChangeEvent {
-    pub fn new() -> Self {
-        ChangeEvent {
-            path: PathBuf::new(),
-        }
-    }
-}
-
-impl Display for ChangeEvent {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.path.display().fmt(f)
-    }
-}
+#[derive(Debug, Clone, Copy)]
+pub struct ChangeEvent;
 
 pub trait PathWatcher {
     fn watch(&self, changes: mpsc::SyncSender<ChangeEvent>) -> Result<()>;
@@ -40,14 +24,15 @@ impl PathWatcher for NotifyWatcher {
             watcher.watch(path.as_ref(), RecursiveMode::Recursive)?;
         }
 
+        let change = ChangeEvent;
+
         for res in rx {
             match res {
                 Ok(event) => {
                     log::debug!("Change in: {:?}", event.paths);
                     for path in event.paths {
-                        let change = ChangeEvent { path };
                         if changes.try_send(change).is_err() {
-                            log::debug!("buffer full, ignoring event");
+                            log::debug!("buffer full, ignoring event in: {}", path.display());
                         };
                     }
                 }
