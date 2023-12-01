@@ -4,28 +4,6 @@
 
 Watch files and execute commands if they change.
 
-## Installation
-
-```
-$ cargo install --locked baywatch
-```
-
-or
-
-Use the provided package via flake
-
-or
-
-```
-$ nix build
-```
-
-or
-
-```
-$ nix run
-```
-
 ## Usage
 
 ```bash
@@ -47,6 +25,28 @@ $ bwatch -- ls -lah
         10 times)
     -   streams stdout and stderr
 -   tested and used only on Linux and Darwin, may or may not work on Windows
+
+## Installation
+
+```
+$ cargo install --locked baywatch
+```
+
+or
+
+Use the provided package via flake
+
+or
+
+```
+$ nix build
+```
+
+or
+
+```
+$ nix run
+```
 
 ## Similar to
 
