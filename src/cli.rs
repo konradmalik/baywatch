@@ -13,6 +13,6 @@ pub struct Args {
     #[arg(short, long)]
     pub shell: bool,
     /// Whether to show exit status
-    #[arg(short, long)]
+    #[arg(long)]
     pub status: bool,
 }
