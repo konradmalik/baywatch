@@ -16,6 +16,7 @@ fn main() -> Result<()> {
     let status = args.status;
     let shell = args.status;
     let clear = args.clear;
+    let defer = args.defer;
 
     logging::init("info");
 
@@ -39,18 +40,21 @@ fn main() -> Result<()> {
         handling::CommandEventHandler::new(command, status)
     };
 
-    start(handler, rx, clear)
+    start(handler, rx, clear, defer)
 }
 
 fn start<T: handling::EventHandler>(
     handler: T,
     rx: mpsc::Receiver<watching::ChangeEvent>,
     clear: bool,
+    defer: bool,
 ) -> Result<()> {
     if clear {
         clearscreen::clear()?;
     }
-    handler.handle(watching::ChangeEvent)?;
+    if !defer {
+        handler.handle(watching::ChangeEvent)?;
+    }
 
     for ev in rx {
         if clear {
