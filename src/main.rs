@@ -1,7 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
 use filters::PathFilter;
-use handling::EventHandler;
 use std::{sync::mpsc, thread};
 use watching::PathWatcher;
 mod cli;
@@ -16,6 +15,7 @@ fn main() -> Result<()> {
     let command = args.command;
     let status = args.status;
     let shell = args.status;
+    let clear = args.clear;
 
     logging::init("info");
 
@@ -39,8 +39,24 @@ fn main() -> Result<()> {
         handling::CommandEventHandler::new(command, status)
     };
 
+    start(handler, rx, clear)
+}
+
+fn start<T: handling::EventHandler>(
+    handler: T,
+    rx: mpsc::Receiver<watching::ChangeEvent>,
+    clear: bool,
+) -> Result<()> {
+    if clear {
+        clearscreen::clear()?;
+    }
+    handler.handle(watching::ChangeEvent)?;
+
     for ev in rx {
-        handler.handle(ev).expect("command handler error");
+        if clear {
+            clearscreen::clear()?;
+        }
+        handler.handle(ev)?;
     }
 
     Ok(())

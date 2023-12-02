@@ -15,4 +15,7 @@ pub struct Args {
     /// Whether to show exit status
     #[arg(long)]
     pub status: bool,
+    /// Whether to clear the screen before each run
+    #[arg(short, long)]
+    pub clear: bool,
 }
