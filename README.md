@@ -1,4 +1,6 @@
+[![crates.io](https://img.shields.io/crates/v/baywatch.svg)](https://crates.io/crates/baywatch)
 [![Actions Status](https://github.com/konradmalik/baywatch/actions/workflows/main.yml/badge.svg)](https://github.com/konradmalik/baywatch/actions)
+[![Actions Status](https://github.com/konradmalik/baywatch/actions/workflows/publish.yml/badge.svg)](https://github.com/konradmalik/baywatch/actions)
 
 # baywatch
 
