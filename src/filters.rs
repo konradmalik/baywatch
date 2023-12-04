@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{fs, path::PathBuf};
 
 pub trait PathFilter {
     fn paths(&self) -> Vec<PathBuf>;
@@ -8,13 +8,29 @@ pub struct IgnorePathFilter {
     root: PathBuf,
 }
 
+pub struct MultiFilter<F: PathFilter> {
+    filters: Vec<F>,
+}
+
 impl PathFilter for IgnorePathFilter {
     fn paths(&self) -> Vec<PathBuf> {
         ignore::Walk::new(&self.root)
             .flatten()
             .filter(|d| d.file_type().map(|ft| ft.is_file()).unwrap_or(false))
-            .map(|d| d.into_path())
+            .flat_map(|d| fs::canonicalize(d.into_path()))
             .collect()
+    }
+}
+
+impl<F: PathFilter> PathFilter for MultiFilter<F> {
+    fn paths(&self) -> Vec<PathBuf> {
+        self.filters.iter().flat_map(|x| x.paths()).collect()
+    }
+}
+
+impl<F: PathFilter> MultiFilter<F> {
+    pub fn new(filters: Vec<F>) -> Self {
+        MultiFilter { filters }
     }
 }
 
@@ -27,6 +43,14 @@ impl IgnorePathFilter {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_includes_only_absolute_paths() {
+        let root_path = get_root_path();
+        let filter = IgnorePathFilter::new(root_path.to_owned());
+        let paths = filter.paths();
+        assert!(paths.iter().all(|p| p.is_absolute()))
+    }
 
     #[test]
     fn test_does_include_this_file() {

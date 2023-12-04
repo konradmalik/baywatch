@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
-use filters::PathFilter;
+use filters::MultiFilter;
 use std::{sync::mpsc, thread};
 use watching::PathWatcher;
 mod cli;
@@ -23,14 +23,15 @@ fn main() -> Result<()> {
     let (tx, rx) = mpsc::sync_channel(0);
 
     thread::spawn(|| {
-        let mut paths_to_watch = Vec::new();
-        for path in paths {
+        let mut filters = Vec::new();
+        for path in paths.clone() {
             log::debug!("Watching {}", &path.display());
             let filter = filters::IgnorePathFilter::new(path);
-            paths_to_watch.extend_from_slice(&filter.paths());
+            filters.push(filter);
         }
 
-        let watcher = watching::NotifyWatcher::new(paths_to_watch);
+        let filter = MultiFilter::new(filters);
+        let watcher = watching::NotifyWatcher::new(paths, filter);
         watcher.watch(tx).expect("cannot start watcher")
     });
 
