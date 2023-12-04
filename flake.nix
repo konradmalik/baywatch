@@ -44,6 +44,13 @@
         {
           bwatch = with pkgs;
             let
+              fs = lib.fileset;
+              sourceFiles = fs.unions [
+                ./Cargo.lock
+                ./Cargo.toml
+                ./src
+              ];
+
               cargoToml = with builtins; (fromTOML (readFile ./Cargo.toml));
               pname = cargoToml.package.name;
               version = cargoToml.package.version;
@@ -52,7 +59,10 @@
             in
             pkgs.rustPlatform.buildRustPackage {
               inherit pname version cargoLock;
-              src = lib.cleanSource ./.;
+              src = fs.toSource {
+                root = ./.;
+                fileset = sourceFiles;
+              };
               nativeBuildInputs = [ clippy rustfmt ];
               buildInputs = [ ] ++ lib.optionals stdenv.isDarwin darwinBuildInputs;
               preBuildPhases = [ "cargoFmt" ];
