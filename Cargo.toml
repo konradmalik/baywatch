@@ -22,7 +22,7 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.78"
-clap = { version = "4.4.11", features = ["derive", "string"] }
+clap = { version = "4.4.12", features = ["derive", "string"] }
 clearscreen = "2.0.1"
 env_logger = "0.10.1"
 ignore = "0.4.21"
