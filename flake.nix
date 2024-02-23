@@ -14,11 +14,8 @@
           "x86_64-darwin"
           "aarch64-darwin"
         ]
-          (system:
-            function (import nixpkgs {
-              inherit system;
-              config.allowUnfree = true;
-            }));
+          (system: function nixpkgs.legacyPackages.${system});
+
       darwinDeps = pkgs: with pkgs; [
         darwin.apple_sdk.frameworks.CoreServices
         libiconv
