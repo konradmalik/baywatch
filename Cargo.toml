@@ -25,6 +25,6 @@ anyhow = "1.0.86"
 clap = { version = "4.5.16", features = ["derive", "string"] }
 clearscreen = "3.0.0"
 env_logger = "0.10.2"
-ignore = "0.4.22"
+ignore = "0.4.23"
 log = "0.4.22"
 notify = "6.1.1"
