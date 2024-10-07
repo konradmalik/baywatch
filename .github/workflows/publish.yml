@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: cachix/install-nix-action@v29
+      - uses: cachix/install-nix-action@v30
 
       - name: publish to crates.io
         run: nix develop --command -- cargo publish
