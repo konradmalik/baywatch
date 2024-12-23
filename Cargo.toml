@@ -21,7 +21,7 @@ name = "bwatch"
 path = "src/main.rs"
 
 [dependencies]
-anyhow = "1.0.94"
+anyhow = "1.0.95"
 clap = { version = "4.5.23", features = ["derive", "string"] }
 clearscreen = "3.0.0"
 env_logger = "0.10.2"
